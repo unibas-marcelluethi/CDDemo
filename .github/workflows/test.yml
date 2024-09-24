@@ -1,0 +1,57 @@
+name: Java CI and Deploy
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Step 2: Set up JDK
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '11'
+
+      # Step 3: Grant execute permission for Gradle wrapper
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      
+      # Step 4: Run tests with Gradle
+      - name: Run tests
+        run: ./gradlew test
+
+      # Step 5: Build the jar file (if applicable)
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      # Step 6: Deploy to the server
+      - name: Deploy to Server
+        if: success()  # This step will only run if all previous steps are successful
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            # Navigate to the server directory and stop the old server (if running)
+            cd ${{ secrets.SERVER_PATH }}
+            pkill -f 'java -jar' || echo "No server running"
+            
+            # Copy new files
+            rsync -avz --delete ./build/libs/*.jar ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }}:${{ secrets.SERVER_PATH }}
+            
+            # Start the new server
+            nohup java -jar ${{ secrets.SERVER_PATH }}/your-app.jar > output.log 2>&1 &
