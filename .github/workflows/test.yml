@@ -61,7 +61,14 @@ jobs:
             cd ${{ secrets.SERVER_PATH }} || echo "cannot change to directory"
             touch "beforekill.txt"
             # kill server if another one is running
-            pkill -f 'java -jar CDDemo-1.0-SNAPSHOT.jar' || echo "No process to kill"
+            pgrep -f 'java -jar CDDemo-1.0-SNAPSHOT.jar' > /dev/null
+  
+            if [ $? -eq 0 ]; then
+              echo "Process found, attempting to kill..."
+              pkill -f 'java -jar CDDemo-1.0-SNAPSHOT.jar' || echo "Failed to kill process"
+            else
+              echo "No process to kill"
+              fi
             touch "afterkill.txt"
             # Start the new server
             nohup java -jar ${{ secrets.SERVER_PATH }}/CDDemo-1.0-SNAPSHOT.jar > output.log 2>&1 &
