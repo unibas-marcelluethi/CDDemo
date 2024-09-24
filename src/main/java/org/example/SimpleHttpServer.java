@@ -35,7 +35,7 @@ public class SimpleHttpServer {
             }
 
             // Create the response message
-            String response = "Hi " + name;
+            String response = "Hello " + name;
 
             // Send the response back
             exchange.sendResponseHeaders(200, response.getBytes().length);
