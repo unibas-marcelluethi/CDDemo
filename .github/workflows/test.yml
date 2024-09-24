@@ -54,14 +54,12 @@ jobs:
           ssh -i ~/.ssh/id_rsa -p 22 ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
             # Navigate to the server directory and stop the old server (if running)
             cd ${{ secrets.SERVER_PATH }} || echo "cannot change to directory"
-            touch "beforekill.txt"
           
             # Kill server if another one is running
-            PID=$(pgrep -f 'java -jar CDDemo-1.0-SNAPSHOT.jar')
+            PID=$(pgrep -f 'CDDemo-1.0-SNAPSHOT.jar')
             if [ -n "$PID" ]; then
               kill $PID
             fi
-            touch "afterkill.txt"
           
             # Start the new server
             nohup java -jar ${{ secrets.SERVER_PATH }}/CDDemo-1.0-SNAPSHOT.jar > output.log 2>&1 &
