@@ -27,7 +27,7 @@ jobs:
       # Step 3: Grant execute permission for Gradle wrapper
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-      
+
       # Step 4: Run tests with Gradle
       - name: Run tests
         run: ./gradlew test
@@ -35,6 +35,17 @@ jobs:
       # Step 5: Build the jar file (if applicable)
       - name: Build with Gradle
         run: ./gradlew build
+
+      - name: Set up SSH key for rsync
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+
+      - name: Rsync files to server
+        run: |
+          rsync -avz --delete -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" ./build/libs/*.jar ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }}:${{ secrets.SERVER_PATH }}
 
       # Step 6: Deploy to the server
       - name: Deploy to Server
@@ -47,11 +58,8 @@ jobs:
           port: 22
           script: |
             # Navigate to the server directory and stop the old server (if running)
-            cd ${{ secrets.SERVER_PATH }}
-            pkill -f 'java -jar' || echo "No server running"
-            
-            # Copy new files
-            rsync -avz --delete ./build/libs/*.jar ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }}:${{ secrets.SERVER_PATH }}
-            
+            cd ${{ secrets.SERVER_PATH }} || echo "cannot change to directory"
+            # kill server if another one is running
+            pkill -f 'java -jar CDDemo-1.0-SNAPSHOT.jar'
             # Start the new server
-            nohup java -jar ${{ secrets.SERVER_PATH }}/your-app.jar > output.log 2>&1 &
+            nohup java -jar ${{ secrets.SERVER_PATH }}/CDDemo-1.0-SNAPSHOT.jar > output.log 2>&1 &
