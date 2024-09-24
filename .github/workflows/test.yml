@@ -50,19 +50,19 @@ jobs:
       # Step 6: Deploy to the server
       - name: Deploy to Server
         if: success()  # This step will only run if all previous steps are successful
-        uses: appleboy/ssh-action@v0.1.4
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
-          script: |
+        run: |
+          ssh -i ~/.ssh/id_rsa -p 22 ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
             # Navigate to the server directory and stop the old server (if running)
             cd ${{ secrets.SERVER_PATH }} || echo "cannot change to directory"
             touch "beforekill.txt"
-            
-            # kill server if another one is running
+          
+            # Kill server if another one is running
             PID=$(pgrep -f 'java -jar CDDemo-1.0-SNAPSHOT.jar')
+            if [ -n "$PID" ]; then
+              kill $PID
+            fi
             touch "afterkill.txt"
+          
             # Start the new server
             nohup java -jar ${{ secrets.SERVER_PATH }}/CDDemo-1.0-SNAPSHOT.jar > output.log 2>&1 &
+          EOF
