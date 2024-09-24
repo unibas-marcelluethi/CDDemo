@@ -59,6 +59,8 @@ jobs:
             PID=$(pgrep -f 'CDDemo-1.0-SNAPSHOT.jar')
             if [ -n "$PID" ]; then
               kill $PID
+              echo "Waiting for process to terminate..."
+              sleep 5  # Add a 5-second delay
             fi
           
             # Start the new server
