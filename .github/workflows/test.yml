@@ -64,13 +64,13 @@ jobs:
             # kill server if another one is running
             PID=$(pgrep -f 'java -jar CDDemo-1.0-SNAPSHOT.jar')
 
-            # Check if the PID was found
-            if [ -n "$PID" ]; then
-              echo "Process found with PID $PID, attempting to kill..."
-              kill $PID || echo "Failed to kill process"
-            else
-              echo "No process to kill"
-            fi
+#            # Check if the PID was found
+#            if [ -n "$PID" ]; then
+#              echo "Process found with PID $PID, attempting to kill..."
+#              kill $PID || echo "Failed to kill process"
+#            else
+#              echo "No process to kill"
+#            fi
             touch "afterkill.txt"
             # Start the new server
             nohup java -jar ${{ secrets.SERVER_PATH }}/CDDemo-1.0-SNAPSHOT.jar > output.log 2>&1 &
