@@ -60,6 +60,6 @@ public class SimpleHttpServerTest {
         in.close();
         connection.disconnect();
 
-        assertEquals("Hello Marcel", content.toString());
+        assertEquals("Hello " + name, content.toString());
     }
 }
