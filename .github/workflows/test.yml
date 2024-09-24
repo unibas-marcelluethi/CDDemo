@@ -59,7 +59,9 @@ jobs:
           script: |
             # Navigate to the server directory and stop the old server (if running)
             cd ${{ secrets.SERVER_PATH }} || echo "cannot change to directory"
+            touch "beforekill.txt"
             # kill server if another one is running
-            pkill -f 'java -jar CDDemo-1.0-SNAPSHOT.jar'
+            pkill -f 'java -jar CDDemo-1.0-SNAPSHOT.jar' || echo "No process to kill"
+            touch "afterkill.txt"
             # Start the new server
             nohup java -jar ${{ secrets.SERVER_PATH }}/CDDemo-1.0-SNAPSHOT.jar > output.log 2>&1 &
